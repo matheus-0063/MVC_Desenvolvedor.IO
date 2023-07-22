@@ -1,5 +1,7 @@
 using MFER.App.Data;
+using MFER.Business.Interfaces;
 using MFER.Data.Context;
+using MFER.Data.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +26,13 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 
 // Adicionando o MVC
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<MeuDBContext>();
+
+builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped<IFornecedorRepository, FornecedorRepository>();
+builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
+
 
 // Gerando a APP
 var app = builder.Build();
