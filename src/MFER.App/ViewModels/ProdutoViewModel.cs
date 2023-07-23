@@ -36,5 +36,9 @@ namespace MFER.App.ViewModels
         [DisplayName("Ativo?")]
         public bool Ativo { get; set; }
         public FornecedorViewModel Fornecedor { get; set; }
+        public IEnumerable<FornecedorViewModel> Fornecedores { get; set; }
+        //Precisamos colocar uma lista de Fornecedores para
+        //podermos popular o DropDawn quando for cadastrar um novo produto
+        //e selecionar qual Fornecedor é aquele produto
     }
 }

@@ -13,7 +13,8 @@ namespace MFER.Data.Repository
 
         public async Task<Produto> ObterProdutoFornecedor(Guid id)
         {
-            return await _entitySet.AsNoTracking().Include(f => f.Fornecedor)
+            return await _meuDBContext.Produtos.AsNoTracking()
+                .Include(f => f.Fornecedor)
                 .FirstOrDefaultAsync(p => p.Id == id);
             //Estou indo na tabela Produtos fazendo un JOIN com a tabela Forncedor(Include)
             //e buscando o primeiro Produto (FirstOrDefaultAsync) que tenha o id passado no parametro
@@ -21,7 +22,8 @@ namespace MFER.Data.Repository
 
         public async Task<IEnumerable<Produto>> ObterProdutosFornecedores()
         {
-            return await _entitySet.AsNoTracking().Include(f => f.Fornecedor)
+            return await _meuDBContext.Produtos.AsNoTracking()
+                .Include(f => f.Fornecedor)
                 .OrderBy(p => p.Nome).ToListAsync();
             //Estou indo na tabela Produtos fazendo un JOIN com a tabela Forncedor(Include)
             //ordenado pelo nome do Produto (.OrderBy(p => p.Nome)) e listando todos os produtos

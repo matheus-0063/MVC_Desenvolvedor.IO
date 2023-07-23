@@ -1,4 +1,8 @@
-﻿using MFER.Business.Models;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MFER.Business.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
@@ -9,7 +13,8 @@ namespace MFER.Data.Context
     {
         public MeuDBContext(DbContextOptions options) : base(options)
         {
-
+            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public DbSet<Produto> Produtos { get; set; }
