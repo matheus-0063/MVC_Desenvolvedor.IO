@@ -1,4 +1,5 @@
-﻿using MFER.Business.Models;
+﻿using MFER.App.Extensions;
+using MFER.Business.Models;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -28,6 +29,7 @@ namespace MFER.App.ViewModels
         
         public string Imagem { get; set; }
 
+        [Moeda]
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public decimal Valor { get; set; }
 
