@@ -22,6 +22,7 @@ namespace MFER.App.ViewModels
         [StringLength(100, ErrorMessage = "O campo {0} precisa ter entre {2} e {1} caracteres", MinimumLength = 2)]
         public string Descricao { get; set; }
 
+        [DisplayName("Imagem do Produto")]
         public IFormFile ImagemUpload { get; set; } 
         //Precisamos duplicar a propriedade e mudar de string para IFormFile
         

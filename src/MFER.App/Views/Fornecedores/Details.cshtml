@@ -1,13 +1,11 @@
 ﻿@model MFER.App.ViewModels.FornecedorViewModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalhes do Fornecedor";
 }
 
-<h1>Details</h1>
-
 <div>
-    <h4>FornecedorViewModel</h4>
+    <h3 style="padding-top: 50px">@ViewData["Title"]</h3>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -37,6 +35,6 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model?.Id">Editar</a>
+    <a class="btn btn-info" asp-action="Index">Voltar</a>
 </div>

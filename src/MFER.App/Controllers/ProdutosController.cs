@@ -3,6 +3,7 @@ using MFER.App.ViewModels;
 using MFER.Business.Interfaces;
 using AutoMapper;
 using MFER.Business.Models;
+using System.Security.Cryptography.Pkcs;
 
 namespace MFER.App.Controllers
 {
@@ -48,6 +49,20 @@ namespace MFER.App.Controllers
         {
             produtoViewModel = await PopularFornecedores(produtoViewModel);
             if (!ModelState.IsValid) return View(produtoViewModel);
+
+            var imgPrefixo = Guid.NewGuid() + "_"; 
+            //Precisamos criar um Prefixo com Guid para a imagem pois cada imagem deve ser unica
+            //Logo ficará o guid_nomeDoArquivo
+
+            if(! await UploadArquivo(produtoViewModel.ImagemUpload, imgPrefixo))
+            {
+                return View(produtoViewModel); 
+                // Estamos validando se o Upload foi bem sucedido
+            }
+
+            produtoViewModel.Imagem = imgPrefixo + produtoViewModel.ImagemUpload.FileName;
+            //Passando o nome do arquivo que foi criado, para o parametro Imagem
+            //Não irá mais da erro ao fazer o upload da imagem
 
             await _produtoRepository.Adicionar(_mapper.Map<Produto>(produtoViewModel));
 
@@ -112,6 +127,32 @@ namespace MFER.App.Controllers
             // Na propriedade Fornecedores da ProdutoViewModel, eu estou obtendo
             // uma lista com de Fornecedores que tem aquele Produto
             return produtoViewModel;
+        }
+
+        private async Task<bool> UploadArquivo(IFormFile arquivo, string imgPrefixo)
+        {
+            if (arquivo.Length <= 0) return false;
+            //Validando o tamanho do arquivo 
+
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/imagens", imgPrefixo + arquivo.FileName);
+            //Eu estou combinando o meu diretorio local (onde ta aplicação), o wwwroot (onde quero salvar a imagem), e o arquivo que eu quero subir
+
+            if(System.IO.File.Exists(path)) 
+            {
+                ModelState.AddModelError(string.Empty, "Já existe um arquivo com este nome!");
+                //Validando se já existe um arquivo com este nome
+                return false;
+            }
+
+            using (var stream = new FileStream(path, FileMode.Create))
+            {
+                await arquivo.CopyToAsync(stream);
+                //CopyToAsync = ele o conteudo que está em arquivo para o disco
+                // passando o parametro stream
+                //stream = path e o diretorio de criação
+            }
+
+            return true;
         }
     }
 }
