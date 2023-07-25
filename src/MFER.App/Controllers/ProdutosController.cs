@@ -83,9 +83,44 @@ namespace MFER.App.Controllers
         {
             if (id != produtoViewModel.Id) return NotFound();
 
+            var produtoDB = await ObterProduto(id);
+            //  Eu quero separar os dados que veio do banco e o que veio do form
+            // Por isso criei o produtoDB 
+            produtoViewModel.Fornecedor = produtoDB.Fornecedor;
+            //Eu fui ao banco quando instanciei o produtoDB
+            //e passei os dados para o produtoViewModel
+            produtoViewModel.Imagem = produtoDB.Imagem;
+
             if (!ModelState.IsValid) return View(produtoViewModel);
 
-            await _produtoRepository.Atualizar(_mapper.Map<Produto>(produtoViewModel));
+            if(produtoViewModel.ImagemUpload != null)
+            {
+                var imgPrefixo = Guid.NewGuid() + "_";
+                //Precisamos criar um Prefixo com Guid para a imagem pois cada imagem deve ser unica
+                //Logo ficará o guid_nomeDoArquivo
+
+                if (!await UploadArquivo(produtoViewModel.ImagemUpload, imgPrefixo))
+                {
+                    return View(produtoViewModel);
+                    // Estamos validando se o Upload foi bem sucedido
+                }
+
+                produtoDB.Imagem = imgPrefixo + produtoViewModel.ImagemUpload.FileName;
+                // Agora estou passando para o produtoDB.Imagem que veio do banco a nova imagem 
+            }
+
+            //Tem muitas informações que eu não recebi pelo formulario, por exemplo o Id do Fornecedor
+            //Por isso eu recupero todas as informações do banco pelo produtoDB alterar o que for necessário 
+            //e retorno para o banco o que veio do formulario, com isso mantemos a segurança de que nenhuma propriedade 
+            //que não está aparecendo na tela de Edição possa ser alterada
+
+            produtoDB.Nome = produtoViewModel.Nome;
+            produtoDB.Descricao = produtoViewModel.Descricao;
+            produtoDB.Valor = produtoViewModel.Valor;
+            produtoDB.Ativo = produtoViewModel.Ativo;
+
+
+            await _produtoRepository.Atualizar(_mapper.Map<Produto>(produtoDB));
 
             return RedirectToAction("Index");
         }
