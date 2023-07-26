@@ -10,6 +10,5 @@ namespace MFER.App.Data
             : base(options)
         {
         }
-        public DbSet<MFER.App.ViewModels.EnderecoViewModel> EnderecoViewModel { get; set; }
     }
 }

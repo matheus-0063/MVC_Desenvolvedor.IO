@@ -14,11 +14,13 @@ namespace MFER.App.Controllers
         /*Os métodos do IRepository retornam as Models, mas nas Views precisam
          ser retornados as ViewModel, por isso precisamos do mapper para fazer 
          essa substituição*/
+        private IEnderecoRepository _enderecoRepository;
 
-        public FornecedoresController(IFornecedorRepository fornecedorRepository, IMapper mapper)
+        public FornecedoresController(IFornecedorRepository fornecedorRepository, IMapper mapper, IEnderecoRepository enderecoRepository)
         {
             _fornecedorRepository = fornecedorRepository;
             _mapper = mapper;
+            _enderecoRepository = enderecoRepository;
         }
 
 
@@ -120,6 +122,50 @@ namespace MFER.App.Controllers
             return RedirectToAction("Index");
         }
 
+        public async Task<IActionResult> ObterEndereco(Guid id)
+        {
+            var fornecedor = await ObterFornecedorEndereco(id);
+
+            if(fornecedor == null) return NotFound();
+
+            return PartialView("_DetalhesEndereco", fornecedor);
+        }
+
+        public async Task<IActionResult> AtualizarEndereco(Guid id)
+        {
+            //Método que irá trazer as informações atuais para a modal
+            var fornecedor = await ObterFornecedorEndereco(id);
+            //colocando na variavel fornecedor as informações do fornecedor
+            //com o endereço passados pelos ID
+
+            if (fornecedor == null) return NotFound();
+
+            return PartialView("_AtualizarEndereco", new FornecedorViewModel { Endereco = fornecedor.Endereco });
+            //E retornando na PartialView (_AtualizarEndereco) uma nova instancia de ForncedorViewModel,
+            //mas populando apenas a propriedade Endereco com o conteudo que veio da variaavel fornecedor
+            //retorna via PartialView, quando eu fizer a chamada via Jquery ele irá me retornar só a partialview
+            //como Modal
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AtualizarEndereco(FornecedorViewModel fornecedorViewModel)
+        {
+            ModelState.Remove("Nome");
+            ModelState.Remove("Documento");
+
+            if (!ModelState.IsValid) return PartialView("_AtualizarEndereco", fornecedorViewModel);
+
+            await _enderecoRepository.Atualizar(_mapper.Map<Endereco>(fornecedorViewModel.Endereco));
+            
+            var url = Url.Action("ObterEndereco", "Fornecedores", new { id = fornecedorViewModel.Endereco.FornecedorId });
+            //Precisamos montar a URL, com o método Action informando a ação (ObterEndereco),
+            //falando em qual controller (Fornecedores), e o FornecedorId
+            //Isso irá para um link Json
+
+            return Json(new { sucess = true, url });
+        }
+
         private async Task<FornecedorViewModel> ObterFornecedorEndereco(Guid id)
             //método auxiliar, qualquer método da Controller que eu
             //tiver que buscar o FornecedorEndereco eu posso usar este método
@@ -137,5 +183,7 @@ namespace MFER.App.Controllers
             // (await _fornecedorRepository.ObterFornecedorProdutosEndereco(id)) = To obtendo um Fornecedor, Produtos e Endereco pelo Id
             // _mapper.Map<FornecedorViewModel> = Convertendo para FornecedorViewModel o resultado da busca acima
         }
+
+
     }
 }
