@@ -2,40 +2,49 @@ using MFER.App.Configuration;
 using MFER.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
-var services = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
+
+//Configuração de App.Services para cada tipo de ambiente (Dev/Prod/ ...)
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("appsettings.json", true, true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true, true)
+    .AddEnvironmentVariables();
 
 // Guardando a connection string do arquivo appSettings.json
-var connectionString = services.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-services.Services.AddIdentityConfiguration(services.Configuration);
+builder.Services.AddIdentityConfiguration(builder.Configuration);
 
 // Adicionando a tela de erro de banco de dados (para desenvolvimento)
-services.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // Adicionando o AutoMapper
-services.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(Program));
 
-services.Services.AddDbContext<MeuDBContext>(options =>
+builder.Services.AddDbContext<MeuDBContext>(options =>
     options.UseSqlServer(connectionString));
 
 // Adicionando o MVC
-services.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews();
 
-services.Services.AddMvcConfiguration();
+builder.Services.AddMvcConfiguration();
 
-services.Services.ResolveDependencies();
+builder.Services.ResolveDependencies();
 
 // Gerando a APP
-var app = services.Build();
+var app = builder.Build();
 
 // Configuração conforme os ambientes
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseMigrationsEndPoint();
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/erro/500");
+    app.UseStatusCodePagesWithRedirects("/erro/{0}");
     app.UseHsts();
 }
 

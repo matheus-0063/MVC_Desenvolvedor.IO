@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
 using MFER.App.ViewModels;
 using MFER.Business.Interfaces;
-using AutoMapper;
 using MFER.Business.Models;
-using System.Security.Cryptography.Pkcs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MFER.App.Controllers
 {
@@ -13,13 +12,14 @@ namespace MFER.App.Controllers
         private readonly IFornecedorRepository _fornecedorRepository;
         private readonly IMapper _mapper;
 
-        public ProdutosController(IProdutoRepository produtoRepository, IFornecedorRepository fornecedorRepository,IMapper mapper)
+        public ProdutosController(IProdutoRepository produtoRepository, IFornecedorRepository fornecedorRepository, IMapper mapper)
         {
             _produtoRepository = produtoRepository;
             _fornecedorRepository = fornecedorRepository;
             _mapper = mapper;
         }
 
+        [Route("lista-de-produtos")]
         public async Task<IActionResult> Index()
         {
             return View(_mapper.Map<IEnumerable<ProdutoViewModel>>(await _produtoRepository.ObterProdutosFornecedores()));
@@ -27,6 +27,7 @@ namespace MFER.App.Controllers
             //e mapeando na ProdutoViewModel
         }
 
+        [Route("detalhes-do-produto/{id:guid}")]
         public async Task<IActionResult> Details(Guid id)
         {
 
@@ -37,26 +38,27 @@ namespace MFER.App.Controllers
             return View(produtoViewModel);
         }
 
+        [Route("novo-produto")]
         public async Task<IActionResult> Create()
         {
             var produtoViewModel = await PopularFornecedores(new ProdutoViewModel());
             return View(produtoViewModel);
         }
 
+        [Route("novo-produto")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProdutoViewModel produtoViewModel)
         {
             produtoViewModel = await PopularFornecedores(produtoViewModel);
             if (!ModelState.IsValid) return View(produtoViewModel);
 
-            var imgPrefixo = Guid.NewGuid() + "_"; 
+            var imgPrefixo = Guid.NewGuid() + "_";
             //Precisamos criar um Prefixo com Guid para a imagem pois cada imagem deve ser unica
             //Logo ficará o guid_nomeDoArquivo
 
-            if(! await UploadArquivo(produtoViewModel.ImagemUpload, imgPrefixo))
+            if (!await UploadArquivo(produtoViewModel.ImagemUpload, imgPrefixo))
             {
-                return View(produtoViewModel); 
+                return View(produtoViewModel);
                 // Estamos validando se o Upload foi bem sucedido
             }
 
@@ -69,6 +71,7 @@ namespace MFER.App.Controllers
             return RedirectToAction("Index");
         }
 
+        [Route("editar-produto/{id:guid}")]
         public async Task<IActionResult> Edit(Guid id)
         {
             var produtoViewModel = await ObterProduto(id);
@@ -77,8 +80,8 @@ namespace MFER.App.Controllers
             return View(produtoViewModel);
         }
 
+        [Route("editar-produto/{id:guid}")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, ProdutoViewModel produtoViewModel)
         {
             if (id != produtoViewModel.Id) return NotFound();
@@ -93,7 +96,7 @@ namespace MFER.App.Controllers
 
             if (!ModelState.IsValid) return View(produtoViewModel);
 
-            if(produtoViewModel.ImagemUpload != null)
+            if (produtoViewModel.ImagemUpload != null)
             {
                 var imgPrefixo = Guid.NewGuid() + "_";
                 //Precisamos criar um Prefixo com Guid para a imagem pois cada imagem deve ser unica
@@ -125,6 +128,7 @@ namespace MFER.App.Controllers
             return RedirectToAction("Index");
         }
 
+        [Route("excluir-produto/{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var produtoViewModel = await ObterProduto(id);
@@ -133,8 +137,8 @@ namespace MFER.App.Controllers
             return View(produtoViewModel);
         }
 
+        [Route("excluir-produto/{id:guid}")]
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             var produtoViewModel = await ObterProduto(id);
@@ -144,10 +148,10 @@ namespace MFER.App.Controllers
 
             return RedirectToAction("Index");
         }
-        
+
         private async Task<ProdutoViewModel> ObterProduto(Guid id)
         {
-            var produto =  _mapper.Map<ProdutoViewModel>(await _produtoRepository.ObterProdutoFornecedor(id));
+            var produto = _mapper.Map<ProdutoViewModel>(await _produtoRepository.ObterProdutoFornecedor(id));
             //Eu estou obtendo Um produto, com o id passado por parametro e mapeando
             //ele para ProdutoViewModel
             produto.Fornecedores = _mapper.Map<IEnumerable<FornecedorViewModel>>(await _fornecedorRepository.ObterTodos());
@@ -172,7 +176,7 @@ namespace MFER.App.Controllers
             var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/imagens", imgPrefixo + arquivo.FileName);
             //Eu estou combinando o meu diretorio local (onde ta aplicação), o wwwroot (onde quero salvar a imagem), e o arquivo que eu quero subir
 
-            if(System.IO.File.Exists(path)) 
+            if (System.IO.File.Exists(path))
             {
                 ModelState.AddModelError(string.Empty, "Já existe um arquivo com este nome!");
                 //Validando se já existe um arquivo com este nome

@@ -23,7 +23,7 @@ namespace MFER.App.Controllers
             _enderecoRepository = enderecoRepository;
         }
 
-
+        [Route("lista-de-fornecedores")]
         public async Task<IActionResult> Index()
         {
             return View(_mapper.Map<IEnumerable<FornecedorViewModel>>(await _fornecedorRepository.ObterTodos()));
@@ -31,7 +31,7 @@ namespace MFER.App.Controllers
             // (_mapper.Map<IEnumerable<FornecedorViewModel>> == vai converter a lista de Fornecedores para uma lista de FornecedoresViewModel
         }
 
-
+        [Route("dados-do-fornecedor/{id:guid}")]
         public async Task<IActionResult> Details(Guid id)
         {
             var fornecedorViewModel = await ObterFornecedorEndereco(id); 
@@ -45,13 +45,14 @@ namespace MFER.App.Controllers
             //que vierem de forncedorViewModel
         }
 
+        [Route("novo-fornecedor")]
         public IActionResult Create()
         {
             return View();
         }
 
+        [Route("novo-fornecedor")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(FornecedorViewModel fornecedorViewModel)
         {
             if (!ModelState.IsValid) return View(fornecedorViewModel);
@@ -69,6 +70,7 @@ namespace MFER.App.Controllers
             //Após adicionar o Forncedor vai retornar para a pagina Index
         }
 
+        [Route("editar-fornecedor/{id:guid}")]
         public async Task<IActionResult> Edit(Guid id)
         {
             var fornecedorViewModel = await ObterFornecedorProdutosEndereco(id);
@@ -82,8 +84,8 @@ namespace MFER.App.Controllers
             //que vierem de forncedorViewModel
         }
 
+        [Route("editar-fornecedor/{id:guid}")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, FornecedorViewModel fornecedorViewModel)
         {
             if (id != fornecedorViewModel.Id) return NotFound();
@@ -100,6 +102,7 @@ namespace MFER.App.Controllers
             //Após atualizar o Forncedor vai retornar para a pagina Index
         }
 
+        [Route("excluir-fornecedor/{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var fornecedorViewModel = await ObterFornecedorEndereco(id);
@@ -109,8 +112,8 @@ namespace MFER.App.Controllers
             return View(fornecedorViewModel);
         }
 
+        [Route("excluir-fornecedor/{id:guid}")]
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             var fornecedorViewModel = await ObterFornecedorEndereco(id);
@@ -122,6 +125,7 @@ namespace MFER.App.Controllers
             return RedirectToAction("Index");
         }
 
+        [Route("obter-endereco-fornecedor/{id:guid}")]
         public async Task<IActionResult> ObterEndereco(Guid id)
         {
             var fornecedor = await ObterFornecedorEndereco(id);
@@ -131,6 +135,7 @@ namespace MFER.App.Controllers
             return PartialView("_DetalhesEndereco", fornecedor);
         }
 
+        [Route("atualizar-endereco-fornecedor/{id:guid}")]
         public async Task<IActionResult> AtualizarEndereco(Guid id)
         {
             //Método que irá trazer as informações atuais para a modal
@@ -147,8 +152,8 @@ namespace MFER.App.Controllers
             //como Modal
         }
 
+        [Route("atualizar-endereco-fornecedor/{id:guid}")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AtualizarEndereco(FornecedorViewModel fornecedorViewModel)
         {
             ModelState.Remove("Nome");
